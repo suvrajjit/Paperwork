@@ -75,7 +75,7 @@ shutil.copy(BASE_DIR / "backend/app/data/synthetic_documents.py", data_dir / "sy
 if (BASE_DIR / "backend/gold-loan-applaction-formcum-agreement.pdf").exists():
     shutil.copy(BASE_DIR / "backend/gold-loan-applaction-formcum-agreement.pdf", m1_dir / "sample_form.pdf")
 
-init_git_repo(m1_dir, "document-intelligence-module", "feat: standalone Document Intelligence OCR extraction microservice")
+init_git_repo(m1_dir, "PlanBDocumentIntelligence", "feat: standalone Document Intelligence OCR extraction microservice")
 
 # -------------------------------------------------------------
 # 2. MODULE 2: Eligibility Copilot
@@ -100,7 +100,7 @@ shutil.copy(BASE_DIR / "backend/app/services/ai/groq.py", m2_services / "groq.py
 shutil.copy(BASE_DIR / "backend/app/services/ai/gemini_service.py", m2_services / "gemini_service.py")
 (m2_services / "__init__.py").touch()
 
-init_git_repo(m2_dir, "eligibility-copilot-module", "feat: standalone deterministic Eligibility Copilot rule engine microservice")
+init_git_repo(m2_dir, "PlanBEligibilityCopilot", "feat: standalone deterministic Eligibility Copilot rule engine microservice")
 
 # -------------------------------------------------------------
 # 3. MODULE 3: Form Readiness Kit
@@ -125,7 +125,7 @@ shutil.copy(BASE_DIR / "backend/app/services/documents/pdf_generator.py", m3_ser
 shutil.copy(BASE_DIR / "backend/app/services/ai/groq.py", m3_services / "groq.py")
 (m3_services / "__init__.py").touch()
 
-init_git_repo(m3_dir, "form-readiness-kit-module", "feat: standalone Form Readiness Kit & draft PDF generator microservice")
+init_git_repo(m3_dir, "PlanBFormReadinessKit", "feat: standalone Form Readiness Kit & draft PDF generator microservice")
 
 # -------------------------------------------------------------
 # 4. MODULE 4: Bilingual Explainer & Voice Agent
@@ -146,6 +146,6 @@ shutil.copy(BASE_DIR / "backend/app/services/ai/groq.py", m4_services / "groq.py
 shutil.copy(BASE_DIR / "backend/app/services/ai/gemini_service.py", m4_services / "gemini_service.py")
 (m4_services / "__init__.py").touch()
 
-init_git_repo(m4_dir, "bilingual-explainer-voice-module", "feat: standalone Bilingual Explainer & Conversational Voice Agent microservice")
+init_git_repo(m4_dir, "PlanBBilingualExplainer", "feat: standalone Bilingual Explainer & Conversational Voice Agent microservice")
 
 print("\n=== ALL 4 STANDALONE MODULE REPOSITORIES GENERATED SUCCESSFULLY ===")
