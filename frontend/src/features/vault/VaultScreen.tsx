@@ -6,12 +6,13 @@ import {
   Trash2,
   Upload,
   Clock,
+  RotateCcw,
 } from 'lucide-react';
 import { SafetyDisclaimer } from '../../components/common/SafetyDisclaimer';
 import { OriginalTextToggle } from '../../components/common/OriginalTextToggle';
 
 export const VaultScreen: React.FC = () => {
-  const { language, setActiveTab, vaultDocs, actionReminders, deleteFromVault } = useApp();
+  const { language, setActiveTab, vaultDocs, actionReminders, deleteFromVault, clearCache } = useApp();
   const [showOriginal, setShowOriginal] = useState(false);
 
   return (
@@ -38,6 +39,20 @@ export const VaultScreen: React.FC = () => {
             showOriginal={showOriginal}
             onToggle={() => setShowOriginal(!showOriginal)}
           />
+
+          <button
+            type="button"
+            onClick={() => {
+              if (window.confirm(language === 'en' ? 'Reset profile and clear cached data?' : 'क्या आप प्रोफ़ाइल और सहेजा गया डेटा रीसेट करना चाहते हैं?')) {
+                clearCache();
+              }
+            }}
+            className="min-h-[44px] px-3.5 py-2 rounded-lg border border-paper-sand hover:border-error-brick hover:text-error-brick text-ink-muted text-xs font-medium flex items-center gap-1.5 transition-colors"
+            title={language === 'en' ? 'Reset local cache' : 'कैश रीसेट करें'}
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            <span>{language === 'en' ? 'Reset Cache' : 'डेटा रीसेट'}</span>
+          </button>
 
           <button
             type="button"

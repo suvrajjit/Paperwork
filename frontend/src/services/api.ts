@@ -198,6 +198,27 @@ export const api = {
     return response.json();
   },
 
+  // Conversational Voice Agent & TTS
+  async guideVoiceAgent(payload: import('../types').VoiceGuideRequest): Promise<import('../types').VoiceGuideResponse> {
+    const response = await fetch(`${API_BASE_URL}/v1/assistant/agent/guide`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok) throw new Error('Voice agent guide request failed');
+    return response.json();
+  },
+
+  async synthesizeSpeech(text: string, voiceName: string = 'Aoede'): Promise<{ audio_base64: string; format: string }> {
+    const response = await fetch(`${API_BASE_URL}/v1/assistant/synthesize`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, voice_name: voiceName }),
+    });
+    if (!response.ok) throw new Error('Speech synthesis failed');
+    return response.json();
+  },
+
   // Document Vault & Reminders
   async getVaultDocuments(): Promise<VaultDocumentItem[]> {
     const response = await fetch(`${API_BASE_URL}/v1/vault/documents`);

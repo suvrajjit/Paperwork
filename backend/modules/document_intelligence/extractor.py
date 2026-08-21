@@ -1,22 +1,60 @@
 import re
 import uuid
+import json
 import logging
 from typing import Optional, List, Dict, Any
 from backend.app.schemas.document_schemas import (
     DocumentExtractionResponse,
     ExtractedField,
 )
-from backend.app.services.ai.groq import groq_service
+from backend.app.services.ai.groq import groq_service, clean_llm_response
+from backend.app.services.ai.gemini_service import gemini_service
 from backend.app.services.ocr.document_parser import document_parser
 from backend.app.data.synthetic_documents import SYNTHETIC_DOCUMENTS
 
 logger = logging.getLogger(__name__)
+
+KNOWN_FORM_LABELS = {
+    "date of birth",
+    "dob",
+    "gender",
+    "father",
+    "father name",
+    "mother",
+    "mother name",
+    "spouse",
+    "spouse name",
+    "address",
+    "communication address",
+    "permanent address",
+    "branch",
+    "sol id",
+    "customer id",
+    "scheme",
+    "mandatory field",
+    "constitution",
+    "religion",
+    "mobile no",
+    "pincode",
+    "state",
+    "district",
+    "city",
+    "pan no",
+    "pan number",
+    "aadhaar no",
+    "uid aadhaar no",
+    "form 60",
+    "c-kyc",
+    "occupation",
+    "education",
+}
 
 
 class DocumentIntelligenceService:
     """
     Module 1: Document Intelligence Service
     Converts image/PDF or synthetic document into OCR text and verified, structured fields.
+    Supports both supporting documents (Aadhaar, Khatauni, Income Cert) and blank/filled application forms.
     """
 
     def mask_sensitive_value(self, field_key: str, value: Any) -> Optional[str]:
@@ -56,6 +94,13 @@ class DocumentIntelligenceService:
         if val_str and val_str in normalized_ocr:
             return True
 
+        # Blank form field indication
+        if "blank" in val_str or "needed" in val_str:
+            if source_str and source_str in normalized_ocr:
+                return True
+            if field.label_en.lower() in normalized_ocr or field.field_key.lower() in normalized_ocr:
+                return True
+
         # Numeric match (e.g. 72000 in '72,000')
         if re.sub(r"[,\.\s₹rs]", "", val_str) in re.sub(r"[,\.\s₹rs]", "", normalized_ocr):
             return True
@@ -64,7 +109,7 @@ class DocumentIntelligenceService:
         if source_str and source_str in normalized_ocr:
             return True
 
-        # Sub-token overlap
+        # Sub-token overlap for multi-word values (e.g. Ramesh Chandra)
         val_tokens = [t for t in val_str.split() if len(t) > 2]
         if val_tokens and all(token in normalized_ocr for token in val_tokens):
             return True
@@ -72,16 +117,29 @@ class DocumentIntelligenceService:
         return False
 
     def detect_document_type(self, raw_text: str) -> str:
-        """Deterministic keyword-based document type detection."""
+        """Accurate keyword-based document type detection."""
         text_lower = raw_text.lower()
-        if "aadhaar" in text_lower or "unique identification" in text_lower:
-            return "identity_card"
-        elif "income certificate" in text_lower or "आय प्रमाण पत्र" in text_lower:
+
+        # Check application forms first
+        if "gold loan" in text_lower or ("loan" in text_lower and "application" in text_lower):
+            return "loan_application_form"
+        elif "application form" in text_lower or "आवेदन पत्र" in text_lower:
+            return "application_form"
+        elif "agreement" in text_lower and "bank" in text_lower:
+            return "banking_agreement"
+
+        # Check standard certificates and ID proofs
+        if "income certificate" in text_lower or "आय प्रमाण पत्र" in text_lower:
             return "income_certificate"
         elif "khatauni" in text_lower or "bhulekh" in text_lower or "खतौनी" in text_lower or "khasra" in text_lower:
             return "land_record"
         elif "caste certificate" in text_lower or "जाति प्रमाण पत्र" in text_lower:
             return "caste_certificate"
+        elif "unique identification authority of india" in text_lower or (
+            "aadhaar" in text_lower and "government of india" in text_lower
+        ):
+            return "identity_card"
+
         return "general_document"
 
     def extract_from_synthetic_sample(self, sample_key: str) -> DocumentExtractionResponse:
@@ -128,6 +186,7 @@ class DocumentIntelligenceService:
     ) -> DocumentExtractionResponse:
         """
         Main extraction entrypoint for Module 1.
+        Supports multi-page documents, blank forms, and supporting certificates.
         """
         # If sample key is provided, use synthetic sample pipeline
         if sample_key and sample_key in SYNTHETIC_DOCUMENTS:
@@ -135,7 +194,6 @@ class DocumentIntelligenceService:
 
         # Process uploaded file
         if not file_bytes or not filename:
-            # Default to first synthetic sample if no file passed
             return self.extract_from_synthetic_sample("sample_aadhaar")
 
         raw_ocr_text, quality_flags = document_parser.parse_file(file_bytes, filename)
@@ -149,8 +207,51 @@ class DocumentIntelligenceService:
         extracted_fields: List[ExtractedField] = []
         warnings: List[str] = []
 
-        # Try Groq LLM extraction
-        groq_result = groq_service.extract_document_fields(raw_ocr_text, detected_type)
+        # 1. Try Groq LLM with safe token window (first 5,000 characters)
+        ocr_window = raw_ocr_text[:6000]
+        groq_result = groq_service.extract_document_fields(ocr_window, detected_type)
+
+        # 2. If Groq failed (e.g. rate limit/token count) or returned empty, try Gemini
+        if not groq_result and gemini_service.is_available():
+            gemini_prompt = f"""You are an accurate, strict document parsing assistant.
+Given the following raw text from an uploaded document/form, extract structured fields.
+If the document is a bank/government application form, identify the form fields to be filled (e.g., Full Name, Date of Birth, Gender, Father/Spouse Name, Communication Address, State, Pincode, Mobile Number, Email, Occupation, Branch, Loan Scheme).
+Return ONLY a valid JSON object matching this schema:
+{{
+  "detected_document_type": "{detected_type}",
+  "fields": [
+    {{
+      "field_key": "standard_snake_case_key",
+      "label_en": "Human-readable English label",
+      "label_hi": "Human-readable Hindi label in Devanagari",
+      "value": "extracted string or '[Blank Form Field]'",
+      "source_text": "Exact text snippet from the raw OCR",
+      "confidence": 0.95,
+      "category": "identity | address | income | loan_details | general",
+      "is_sensitive": false
+    }}
+  ]
+}}
+
+Raw Document OCR Text:
+\"\"\"
+{raw_ocr_text[:12000]}
+\"\"\"
+"""
+            raw_gemini_resp = gemini_service.generate_chat_response(
+                "You are a precise data extractor that returns only valid JSON without markdown fences.",
+                gemini_prompt,
+                temperature=0.1,
+            )
+            if raw_gemini_resp:
+                try:
+                    cleaned_gemini = clean_llm_response(raw_gemini_resp)
+                    match = re.search(r"\{.*\}", cleaned_gemini, re.DOTALL)
+                    groq_result = json.loads(match.group(0)) if match else json.loads(cleaned_gemini)
+                except Exception as e:
+                    logger.warning(f"Error parsing Gemini extraction JSON: {e}")
+
+        # Parse LLM fields
         if groq_result and "fields" in groq_result:
             detected_type = groq_result.get("detected_document_type", detected_type)
             for f in groq_result["fields"]:
@@ -173,10 +274,10 @@ class DocumentIntelligenceService:
                     warnings.append(
                         f"Field '{field_obj.label_en}' had insufficient grounding in OCR text and was flagged for review."
                     )
-                    field_obj.confidence = 0.4
+                    field_obj.confidence = 0.5
                     extracted_fields.append(field_obj)
 
-        # Fallback deterministic parser if Groq was unavailable or returned no fields
+        # 3. Fallback deterministic parser if AI extraction returned no fields
         if not extracted_fields:
             extracted_fields = self._fallback_regex_extract(raw_ocr_text, detected_type)
 
@@ -193,27 +294,43 @@ class DocumentIntelligenceService:
         )
 
     def _fallback_regex_extract(self, text: str, doc_type: str) -> List[ExtractedField]:
-        """Regex-based fallback extractor for common Indian document patterns."""
+        """Robust regex-based fallback extractor with label conflict protection."""
         fields: List[ExtractedField] = []
 
-        # Name extraction pattern
-        name_match = re.search(r"(?:Name|नाम|Applicant Name|खातेदार का नाम)[:\s]+([A-Za-z\s]+)", text, re.IGNORECASE)
+        # Name extraction pattern (ensure not matching adjacent label)
+        name_match = re.search(r"(?:Name|नाम|Applicant Name|खातेदार का नाम)[:\s\-\.]*([A-Za-z\s]{3,30})", text, re.IGNORECASE)
         if name_match:
-            val = name_match.group(1).strip()
-            fields.append(
-                ExtractedField(
-                    field_key="full_name",
-                    label_en="Full Name",
-                    label_hi="पूरा नाम",
-                    value=val,
-                    source_text=name_match.group(0),
-                    confidence=0.88,
-                    category="identity",
+            raw_val = name_match.group(1).strip()
+            # Verify that the value is not another known field label (e.g. 'Date of Birth')
+            is_label = any(label in raw_val.lower() for label in KNOWN_FORM_LABELS)
+            if not is_label:
+                fields.append(
+                    ExtractedField(
+                        field_key="full_name",
+                        label_en="Full Name",
+                        label_hi="पूरा नाम",
+                        value=raw_val,
+                        source_text=name_match.group(0),
+                        confidence=0.88,
+                        category="identity",
+                    )
                 )
-            )
+            else:
+                # Blank form template field
+                fields.append(
+                    ExtractedField(
+                        field_key="full_name",
+                        label_en="Full Name",
+                        label_hi="पूरा नाम",
+                        value="[Blank Form Field - Required]",
+                        source_text=name_match.group(0),
+                        confidence=0.85,
+                        category="identity",
+                    )
+                )
 
         # DOB pattern (DD/MM/YYYY or DD-MM-YYYY)
-        dob_match = re.search(r"(?:DOB|जन्म तिथि|Date of Birth)[:\s]+(\d{2}[/\-]\d{2}[/\-]\d{4})", text, re.IGNORECASE)
+        dob_match = re.search(r"(?:DOB|जन्म तिथि|Date of Birth)[:\s\-\.]*(\d{2}[/\-]\d{2}[/\-]\d{4})", text, re.IGNORECASE)
         if dob_match:
             val = dob_match.group(1).strip()
             fields.append(
@@ -224,6 +341,18 @@ class DocumentIntelligenceService:
                     value=val,
                     source_text=dob_match.group(0),
                     confidence=0.92,
+                    category="identity",
+                )
+            )
+        elif "date of birth" in text.lower() or "dob" in text.lower():
+            fields.append(
+                ExtractedField(
+                    field_key="date_of_birth",
+                    label_en="Date of Birth",
+                    label_hi="जन्म तिथि",
+                    value="[Blank Form Field - Required]",
+                    source_text="Date of Birth",
+                    confidence=0.85,
                     category="identity",
                 )
             )
@@ -240,6 +369,24 @@ class DocumentIntelligenceService:
                     value=val,
                     masked_value=self.mask_sensitive_value("aadhaar_number", val),
                     source_text=aadhaar_match.group(0),
+                    confidence=0.95,
+                    category="identity",
+                    is_sensitive=True,
+                )
+            )
+
+        # PAN pattern
+        pan_match = re.search(r"\b([A-Z]{5}[0-9]{4}[A-Z]{1})\b", text)
+        if pan_match:
+            val = pan_match.group(1).strip()
+            fields.append(
+                ExtractedField(
+                    field_key="pan_number",
+                    label_en="PAN Number",
+                    label_hi="पैन नंबर",
+                    value=val,
+                    masked_value=self.mask_sensitive_value("pan_number", val),
+                    source_text=pan_match.group(0),
                     confidence=0.95,
                     category="identity",
                     is_sensitive=True,

@@ -27,6 +27,8 @@ interface AppContextType {
   profile: CitizenProfile;
   updateProfileField: (key: string, value: any, source?: string, confidence?: number) => void;
   applyExtractedDocument: (doc: DocumentExtractionResponse) => void;
+  resetProfile: () => void;
+  clearCache: () => void;
   selectedFormId: string;
   setSelectedFormId: (id: string) => void;
   selectedSchemeId: string;
@@ -40,6 +42,17 @@ interface AppContextType {
   deleteFromVault: (id: string) => Promise<void>;
   refreshVault: () => Promise<void>;
 }
+
+const STORAGE_KEYS = {
+  LANGUAGE: 'easypaper_language',
+  ACTIVE_TAB: 'easypaper_active_tab',
+  USER: 'easypaper_user',
+  PROFILE: 'easypaper_profile',
+  SELECTED_FORM: 'easypaper_selected_form',
+  SELECTED_SCHEME: 'easypaper_selected_scheme',
+  VAULT_DOCS: 'easypaper_vault_docs',
+  REMINDERS: 'easypaper_action_reminders',
+};
 
 const DEFAULT_PROFILE: CitizenProfile = {
   full_name: { value: 'Ramesh Kumar Sharma', source: 'demo_preset', confidence: 0.98, confirmed_by_user: true },
@@ -60,20 +73,98 @@ const DEFAULT_PROFILE: CitizenProfile = {
   custom_fields: {},
 };
 
+function loadStorage<T>(key: string, fallback: T): T {
+  try {
+    const item = localStorage.getItem(key);
+    if (item !== null) {
+      return JSON.parse(item);
+    }
+  } catch (e) {
+    console.warn(`Failed to parse cached localStorage key: ${key}`, e);
+  }
+  return fallback;
+}
+
+function saveStorage<T>(key: string, value: T): void {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch (e) {
+    console.warn(`Failed to save to localStorage key: ${key}`, e);
+  }
+}
+
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [language, setLanguage] = useState<Language>('en');
-  const [activeTab, setActiveTab] = useState<ScreenTab>('welcome');
-  const [user, setUser] = useState<UserSession | null>(null);
-  const [profile, setProfile] = useState<CitizenProfile>(DEFAULT_PROFILE);
-  const [selectedFormId, setSelectedFormId] = useState<string>('form_pm_kisan_app');
-  const [selectedSchemeId, setSelectedSchemeId] = useState<string>('scheme_pm_kisan');
+  // Initialize state from LocalStorage cache with fallback defaults
+  const [language, setLanguageState] = useState<Language>(() =>
+    loadStorage<Language>(STORAGE_KEYS.LANGUAGE, 'en')
+  );
+  const [activeTab, setActiveTabState] = useState<ScreenTab>(() =>
+    loadStorage<ScreenTab>(STORAGE_KEYS.ACTIVE_TAB, 'welcome')
+  );
+  const [user, setUserState] = useState<UserSession | null>(() =>
+    loadStorage<UserSession | null>(STORAGE_KEYS.USER, null)
+  );
+  const [profile, setProfileState] = useState<CitizenProfile>(() =>
+    loadStorage<CitizenProfile>(STORAGE_KEYS.PROFILE, DEFAULT_PROFILE)
+  );
+  const [selectedFormId, setSelectedFormIdState] = useState<string>(() =>
+    loadStorage<string>(STORAGE_KEYS.SELECTED_FORM, 'form_pm_kisan_app')
+  );
+  const [selectedSchemeId, setSelectedSchemeIdState] = useState<string>(() =>
+    loadStorage<string>(STORAGE_KEYS.SELECTED_SCHEME, 'scheme_pm_kisan')
+  );
   const [activeFieldId, setActiveFieldId] = useState<string | null>(null);
-  const [vaultDocs, setVaultDocs] = useState<VaultDocumentItem[]>([]);
-  const [actionReminders, setActionReminders] = useState<ActionReminder[]>([]);
+  const [vaultDocs, setVaultDocsState] = useState<VaultDocumentItem[]>(() =>
+    loadStorage<VaultDocumentItem[]>(STORAGE_KEYS.VAULT_DOCS, [])
+  );
+  const [actionReminders, setActionRemindersState] = useState<ActionReminder[]>(() =>
+    loadStorage<ActionReminder[]>(STORAGE_KEYS.REMINDERS, [])
+  );
 
-  // Track document types that are present in profile/vault
+  // Sync state changes to LocalStorage cache
+  const setLanguage = (lang: Language) => {
+    setLanguageState(lang);
+    saveStorage(STORAGE_KEYS.LANGUAGE, lang);
+  };
+
+  const setActiveTab = (tab: ScreenTab) => {
+    setActiveTabState(tab);
+    saveStorage(STORAGE_KEYS.ACTIVE_TAB, tab);
+  };
+
+  const setUser = (u: UserSession | null) => {
+    setUserState(u);
+    saveStorage(STORAGE_KEYS.USER, u);
+  };
+
+  const setProfile = (p: CitizenProfile) => {
+    setProfileState(p);
+    saveStorage(STORAGE_KEYS.PROFILE, p);
+  };
+
+  const setSelectedFormId = (id: string) => {
+    setSelectedFormIdState(id);
+    saveStorage(STORAGE_KEYS.SELECTED_FORM, id);
+  };
+
+  const setSelectedSchemeId = (id: string) => {
+    setSelectedSchemeIdState(id);
+    saveStorage(STORAGE_KEYS.SELECTED_SCHEME, id);
+  };
+
+  const setVaultDocs = (docs: VaultDocumentItem[]) => {
+    setVaultDocsState(docs);
+    saveStorage(STORAGE_KEYS.VAULT_DOCS, docs);
+  };
+
+  const setActionReminders = (rems: ActionReminder[]) => {
+    setActionRemindersState(rems);
+    saveStorage(STORAGE_KEYS.REMINDERS, rems);
+  };
+
+  // Track document types present in profile/vault
   const availableDocumentTypes = [
     'identity_card',
     'land_record',
@@ -82,10 +173,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   ];
 
   const signInGuest = () => {
-    setUser({
+    const guestUser: UserSession = {
       name: language === 'en' ? 'Demo Guest Citizen' : 'डेमो अतिथि नागरिक',
       isGuest: true,
-    });
+    };
+    setUser(guestUser);
     setActiveTab('dashboard');
   };
 
@@ -94,8 +186,26 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setActiveTab('welcome');
   };
 
+  const resetProfile = () => {
+    setProfile(DEFAULT_PROFILE);
+  };
+
+  const clearCache = () => {
+    try {
+      Object.values(STORAGE_KEYS).forEach((k) => localStorage.removeItem(k));
+    } catch (e) {}
+    setLanguageState('en');
+    setActiveTabState('welcome');
+    setUserState(null);
+    setProfileState(DEFAULT_PROFILE);
+    setSelectedFormIdState('form_pm_kisan_app');
+    setSelectedSchemeIdState('scheme_pm_kisan');
+    setVaultDocsState([]);
+    setActionRemindersState([]);
+  };
+
   const updateProfileField = (key: string, value: any, source: string = 'user_input', confidence: number = 1.0) => {
-    setProfile((prev) => {
+    setProfileState((prev) => {
       const updated = { ...prev };
       const fieldVal: ProfileFieldValue = {
         value,
@@ -110,12 +220,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         if (!updated.custom_fields) updated.custom_fields = {};
         updated.custom_fields[key] = fieldVal;
       }
+      saveStorage(STORAGE_KEYS.PROFILE, updated);
       return updated;
     });
   };
 
   const applyExtractedDocument = (doc: DocumentExtractionResponse) => {
-    setProfile((prev) => {
+    setProfileState((prev) => {
       const updated = { ...prev };
       doc.fields.forEach((f) => {
         const fieldVal: ProfileFieldValue = {
@@ -134,6 +245,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           updated.custom_fields[f.field_key] = fieldVal;
         }
       });
+      saveStorage(STORAGE_KEYS.PROFILE, updated);
       return updated;
     });
   };
@@ -145,25 +257,27 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const rems = await api.getActionReminders();
       setActionReminders(rems);
     } catch (e) {
-      console.warn('Could not load vault data:', e);
+      console.warn('Could not load remote vault data, using cached local store:', e);
     }
   };
 
   const saveToVault = async (doc: VaultDocumentItem) => {
     try {
       const saved = await api.saveVaultDocument(doc);
-      setVaultDocs((prev) => [saved, ...prev.filter((d) => d.id !== saved.id)]);
+      setVaultDocs([saved, ...vaultDocs.filter((d) => d.id !== saved.id)]);
     } catch (e) {
-      console.error('Error saving to vault:', e);
+      console.error('Error saving to vault backend, persisting locally:', e);
+      setVaultDocs([doc, ...vaultDocs.filter((d) => d.id !== doc.id)]);
     }
   };
 
   const deleteFromVault = async (id: string) => {
     try {
       await api.deleteVaultDocument(id);
-      setVaultDocs((prev) => prev.filter((d) => d.id !== id));
+      setVaultDocs(vaultDocs.filter((d) => d.id !== id));
     } catch (e) {
-      console.error('Error deleting from vault:', e);
+      console.error('Error deleting from remote vault, removing locally:', e);
+      setVaultDocs(vaultDocs.filter((d) => d.id !== id));
     }
   };
 
@@ -184,6 +298,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         profile,
         updateProfileField,
         applyExtractedDocument,
+        resetProfile,
+        clearCache,
         selectedFormId,
         setSelectedFormId,
         selectedSchemeId,

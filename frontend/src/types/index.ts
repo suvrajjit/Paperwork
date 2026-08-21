@@ -7,7 +7,8 @@ export type ScreenTab =
   | 'eligibility'
   | 'document_review'
   | 'form_readiness'
-  | 'vault';
+  | 'vault'
+  | 'standalone_showcase';
 
 export interface ProfileFieldValue {
   value: any;
@@ -219,4 +220,33 @@ export interface ActionReminder {
   priority: 'high' | 'medium' | 'low';
   action_url?: string;
   is_completed: boolean;
+}
+
+export interface VoiceGuideRequest {
+  user_message: string;
+  language: 'en' | 'hi';
+  current_screen: string;
+  agent_stage?: string;
+  active_form_id?: string | null;
+  active_field_id?: string | null;
+  profile_data?: Record<string, any>;
+  form_fields?: Array<{ field_id: string; profile_mapping?: string; label_en: string; label_hi: string }>;
+  conversation_history?: Array<{ role: string; content: string }>;
+  synthesize_audio?: boolean;
+}
+
+export interface VoiceGuideResponse {
+  spoken_text_en: string;
+  spoken_text_hi: string;
+  action_type: 'NAVIGATE' | 'SELECT_FORM' | 'SELECT_FIELD' | 'UPDATE_FIELD' | 'SPEAK';
+  agent_stage: string;
+  target_screen?: ScreenTab | null;
+  target_form_id?: string | null;
+  target_field_id?: string | null;
+  extracted_field_update?: { field_key: string; value: any } | null;
+  missing_fields_remaining: string[];
+  suggested_quick_replies_en: string[];
+  suggested_quick_replies_hi: string[];
+  audio_base64?: string | null;
+  audio_format?: string;
 }

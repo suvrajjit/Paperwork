@@ -10,6 +10,7 @@ import {
   Sparkles,
   User,
   LogOut,
+  Terminal,
 } from 'lucide-react';
 
 export const Header: React.FC = () => {
@@ -22,29 +23,33 @@ export const Header: React.FC = () => {
     { tab: 'document_review', label_en: 'Documents', label_hi: 'दस्तावेज़', icon: Sparkles },
     { tab: 'form_readiness', label_en: 'Prepare Plan', label_hi: 'तैयारी योजना', icon: CheckCircle2 },
     { tab: 'vault', label_en: 'Vault', label_hi: 'तिजोरी', icon: FolderLock },
+    { tab: 'standalone_showcase', label_en: 'Module Demos', label_hi: 'मॉड्यूल डेमो', icon: Terminal },
   ];
 
   return (
     <header className="border-b border-paper-sand bg-paper-surface sticky top-0 z-40 shadow-xs">
       <div className="max-w-content mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
         {/* Brand */}
-        <div className="flex items-center gap-3 cursor-pointer" onClick={() => setActiveTab(user ? 'dashboard' : 'welcome')}>
-          <div className="w-9 h-9 rounded bg-guidance text-white flex items-center justify-center font-bold text-sm tracking-wide">
-            PA
+        <div
+          className="flex items-center gap-3 cursor-pointer select-none"
+          onClick={() => setActiveTab(user ? 'dashboard' : 'welcome')}
+        >
+          <div className="w-9 h-9 rounded-lg bg-guidance text-white flex items-center justify-center font-bold text-sm tracking-wider shadow-xs">
+            EP
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-semibold text-base sm:text-lg tracking-tight text-ink">
-                Paperwork & Access
+              <span className="font-bold text-lg sm:text-xl tracking-tight text-ink">
+                EasyPaper
               </span>
-              <span className="hidden md:inline-flex text-xs px-2 py-0.5 rounded bg-guidance-light text-guidance font-medium">
+              <span className="hidden md:inline-flex text-[11px] px-2 py-0.5 rounded-full bg-guidance-light text-guidance font-semibold">
                 {language === 'en' ? 'Bilingual Form Assistant' : 'द्विभाषी फॉर्म सहायक'}
               </span>
             </div>
           </div>
         </div>
 
-        {/* Navigation Tabs (when logged in or guest active) */}
+        {/* Navigation Tabs (when active) */}
         {user && (
           <nav className="hidden lg:flex items-center gap-1">
             {navItems.map((item) => {
@@ -71,7 +76,7 @@ export const Header: React.FC = () => {
         {/* Right Controls: Language Switch + User Status */}
         <div className="flex items-center gap-3">
           {/* Language Switch */}
-          <div className="flex items-center rounded border border-paper-sand p-0.5 bg-paper-canvas text-xs font-medium">
+          <div className="flex items-center rounded-lg border border-paper-sand p-0.5 bg-paper-canvas text-xs font-medium">
             <button
               type="button"
               onClick={() => setLanguage('en')}
@@ -88,7 +93,7 @@ export const Header: React.FC = () => {
               onClick={() => setLanguage('hi')}
               className={`px-2.5 py-1 rounded transition-colors ${
                 language === 'hi'
-                  ? 'bg-paper-surface text-ink font-semibold shadow-xs'
+                  ? 'bg-paper-surface text-ink font-semibold shadow-xs font-devanagari'
                   : 'text-ink-muted hover:text-ink'
               }`}
             >
@@ -102,11 +107,6 @@ export const Header: React.FC = () => {
               <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-paper-canvas border border-paper-sand text-xs text-ink">
                 <User className="w-3.5 h-3.5 text-guidance" />
                 <span className="font-medium">{user.name}</span>
-                {user.isGuest && (
-                  <span className="text-[10px] uppercase font-bold text-ink-muted bg-paper-sand px-1.5 py-0.2 rounded">
-                    Demo
-                  </span>
-                )}
               </div>
               <button
                 onClick={signOut}
@@ -118,8 +118,8 @@ export const Header: React.FC = () => {
             </div>
           ) : (
             <button
-              onClick={() => setActiveTab('welcome')}
-              className="text-xs font-medium px-3 py-1.5 rounded bg-guidance text-white hover:bg-guidance-hover"
+              onClick={() => setActiveTab('dashboard')}
+              className="text-xs font-semibold px-3.5 py-2 rounded-lg bg-guidance text-white hover:bg-guidance-hover transition-colors"
             >
               {language === 'en' ? 'Get Started' : 'प्रारंभ करें'}
             </button>
@@ -129,7 +129,7 @@ export const Header: React.FC = () => {
 
       {/* Mobile Sub-Navigation Bar */}
       {user && (
-        <div className="lg:hidden border-t border-paper-sand bg-paper-canvas overflow-x-auto py-1 px-3 flex gap-1 scrollbar-none">
+        <div className="lg:hidden border-t border-paper-sand bg-paper-canvas overflow-x-auto py-1.5 px-3 flex gap-1 scrollbar-none">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.tab;

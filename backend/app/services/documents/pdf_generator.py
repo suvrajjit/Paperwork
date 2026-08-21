@@ -26,7 +26,7 @@ class PDFDraftGenerator:
         # Header Title
         page.insert_text(
             pymupdf.Point(48, 62),
-            "PAPERWORK & ACCESS — FORM READINESS PLAN",
+            "EASYPAPER — FORM READINESS PLAN",
             fontsize=12,
             fontname="helv",
             color=(0.18, 0.42, 0.34),

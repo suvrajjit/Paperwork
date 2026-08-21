@@ -1,30 +1,38 @@
 # Module 3: Form Readiness Kit
 
-**Product Promise:** Converts a target form template and confirmed citizen profile into a field-by-field completion plan.
-Provides clear, bilingual 'write this here' instructions for manual forms and generates downloadable draft PDFs with safety banners.
+**Sellable Standalone Service:** Transforms any form template and confirmed citizen profile into a sequential, field-by-field completion plan and generates watermarked downloadable draft PDFs.
 
-## Standalone Value
-- **API Endpoint:** `POST /v1/forms/prepare`
-- **Draft PDF Generation:** `POST /v1/forms/{form_id}/draft-pdf`
-- **Output:** Sequential numbered field plan, pre-filled values with source provenance, exact manual writing guidance, and pre-submission checklist.
+---
 
-## Request Example
+## 1. Value Proposition
+- **Sequential "Write This Here" Instructions**: Guides users filling physical or paper forms with exact words/numbers to write in every single box.
+- **Data Provenance & Confidence**: Each proposed field value clearly states its origin (e.g. `doc_ocr_identity_card`, `user_input`).
+- **Pre-Submission Checklist**: Generates targeted compliance checklists (attestations, attachments, verification steps).
+- **Watermarked Draft PDF Generation**: Compiles ready fields into an official printable draft PDF stamped with safety verification watermarks.
+
+---
+
+## 2. API Contract
+
+### Primary Endpoint: `POST /v1/forms/prepare`
+
+#### Request Payload
 ```json
 {
   "form_id": "form_pm_kisan_app",
+  "language": "en",
   "profile": {
-    "full_name": {"value": "Ramesh Kumar Sharma", "source": "aadhaar"},
-    "aadhaar_number": {"value": "9876 5432 1098", "source": "aadhaar"},
-    "state": {"value": "Uttar Pradesh", "source": "aadhaar"},
-    "district": {"value": "Varanasi", "source": "aadhaar"},
-    "pincode": {"value": "221001", "source": "aadhaar"},
-    "landholding_acres": {"value": 2.4, "source": "khatauni"}
-  },
-  "language": "en"
+    "full_name": { "value": "Ramesh Kumar Sharma", "source": "aadhaar", "confidence": 0.98 },
+    "aadhaar_number": { "value": "9876 5432 1098", "source": "aadhaar", "confidence": 0.99 },
+    "state": { "value": "Uttar Pradesh", "source": "aadhaar", "confidence": 0.95 },
+    "district": { "value": "Varanasi", "source": "aadhaar", "confidence": 0.95 },
+    "pincode": { "value": "221001", "source": "aadhaar", "confidence": 0.95 },
+    "landholding_acres": { "value": 2.4, "source": "khatauni", "confidence": 0.96 }
+  }
 }
 ```
 
-## Response Example
+#### Response Body
 ```json
 {
   "form_id": "form_pm_kisan_app",
@@ -42,7 +50,8 @@ Provides clear, bilingual 'write this here' instructions for manual forms and ge
       "proposed_value": "Ramesh Kumar Sharma",
       "value_source": "document_confirmed",
       "completion_state": "ready",
-      "manual_instruction_en": "Write 'Ramesh Kumar Sharma' clearly in this box/line."
+      "manual_instruction_en": "Write 'Ramesh Kumar Sharma' clearly in this box.",
+      "manual_instruction_hi": "इस बॉक्स में स्पष्ट रूप से 'Ramesh Kumar Sharma' लिखें।"
     }
   ],
   "checklist_en": [
@@ -51,11 +60,28 @@ Provides clear, bilingual 'write this here' instructions for manual forms and ge
   ],
   "can_generate_pdf_draft": true,
   "draft_download_url": "/v1/forms/form_pm_kisan_app/draft-pdf",
-  "disclaimer": "Guidance only: Verify all values before final submission."
+  "disclaimer": "Guidance only: Review all values before submitting to official authorities."
 }
 ```
 
-## Running Tests
+---
+
+### PDF Download Endpoint: `POST /v1/forms/{form_id}/draft-pdf`
+Returns a binary `application/pdf` stream of the compiled watermarked application draft.
+
+---
+
+## 3. Standalone 30-Second Demo Script
+1. **Select Form Template**: Pick **PM-Kisan Farmer Form** or **Gold Loan Agreement**.
+2. **Inject Profile**: Load confirmed synthetic profile data.
+3. **Execute Readiness API**: Click **"Generate Readiness Plan"**.
+4. **Show Field Breakdown**: Review the sequential "Write this here" steps and completion progress bar.
+5. **Download Draft PDF**: Click **"Download Watermarked Draft PDF"** and preview the generated official PDF.
+
+---
+
+## 4. Standalone Execution & Tests
 ```bash
+# Run unit tests
 pytest backend/tests/test_form_readiness_kit.py
 ```

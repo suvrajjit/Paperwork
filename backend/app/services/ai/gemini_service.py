@@ -51,38 +51,57 @@ class GeminiService:
             logger.error(f"Gemini generation error: {e}")
             return None
 
-    def synthesize_speech(self, text: str, voice_name: Optional[str] = None) -> Optional[str]:
+    def synthesize_speech(self, text: str, voice_name: Optional[str] = None, lang: str = "hi") -> Optional[tuple[str, str]]:
         """
-        Generate short spoken audio bytes in base64 using Gemini TTS.
+        Generate short spoken audio bytes in base64.
+        Tries Gemini 2.5 Flash TTS first, with seamless fallback to gTTS (MP3).
+        Returns tuple of (base64_audio, format) e.g. ('...', 'mp3' or 'pcm_24khz').
         """
-        if not self.is_available():
+        if not text or not text.strip():
             return None
 
-        try:
-            selected_voice = voice_name or self.voice_name
-            response = self.client.models.generate_content(
-                model=self.tts_model,
-                contents=text,
-                config=types.GenerateContentConfig(
-                    response_modalities=["AUDIO"],
-                    speech_config=types.SpeechConfig(
-                        voice_config=types.VoiceConfig(
-                            prebuilt_voice_config=types.PrebuiltVoiceConfig(
-                                voice_name=selected_voice
+        # 1. Try Gemini 2.5 Flash TTS
+        if self.is_available():
+            try:
+                selected_voice = voice_name or self.voice_name
+                response = self.client.models.generate_content(
+                    model=self.tts_model,
+                    contents=text,
+                    config=types.GenerateContentConfig(
+                        response_modalities=["AUDIO"],
+                        speech_config=types.SpeechConfig(
+                            voice_config=types.VoiceConfig(
+                                prebuilt_voice_config=types.PrebuiltVoiceConfig(
+                                    voice_name=selected_voice
+                                )
                             )
-                        )
+                        ),
                     ),
-                ),
-            )
-            if response.candidates and response.candidates[0].content.parts:
-                for part in response.candidates[0].content.parts:
-                    if part.inline_data and part.inline_data.data:
-                        # Return base64 audio string
-                        return base64.b64encode(part.inline_data.data).decode("utf-8")
-            return None
+                )
+                if response.candidates and response.candidates[0].content.parts:
+                    for part in response.candidates[0].content.parts:
+                        if part.inline_data and part.inline_data.data:
+                            return (base64.b64encode(part.inline_data.data).decode("utf-8"), "pcm_24khz")
+            except Exception as e:
+                logger.warning(f"Gemini TTS generation limit/warning, switching to high-reliability gTTS: {e}")
+
+        # 2. Fallback to gTTS (Unlimited MP3 generation)
+        try:
+            import io
+            from gtts import gTTS
+            is_hindi = any('\u0900' <= char <= '\u097f' for char in text)
+            target_lang = 'hi' if is_hindi else 'en'
+
+            tts = gTTS(text=text, lang=target_lang, slow=False)
+            fp = io.BytesIO()
+            tts.write_to_fp(fp)
+            fp.seek(0)
+            b64_mp3 = base64.b64encode(fp.read()).decode("utf-8")
+            return (b64_mp3, "mp3")
         except Exception as e:
-            logger.error(f"Gemini TTS generation failed: {e}")
+            logger.error(f"TTS audio synthesis failed: {e}")
             return None
 
 
 gemini_service = GeminiService()
+

@@ -194,5 +194,129 @@
       "निवास प्रमाण के रूप में बिजली बिल, राशन कार्ड अथवा निवास प्रमाण पत्र संलग्न करें।",
       "वार्षिक पारिवारिक आय के संबंध में स्व-घोषणा शपथ पत्र प्रस्तुत करें।"
     ]
+  },
+  {
+    "id": "form_gold_loan_app",
+    "name_en": "Gold Loan Application Form-cum-Agreement",
+    "name_hi": "स्वर्ण ऋण आवेदन पत्र एवं अनुबंध",
+    "category": "Banking & Loans",
+    "form_type": "manual",
+    "supported_fillable": true,
+    "description_en": "Official Bank Gold Loan Application Form and Loan Agreement with KYC & collateral fields.",
+    "description_hi": "केवाईसी और गिरवी विवरण सहित आधिकारिक बैंक स्वर्ण ऋण आवेदन प्रपत्र एवं अनुबंध।",
+    "fields": [
+      {
+        "field_id": "f_branch_name",
+        "profile_mapping": "branch",
+        "label_en": "Bank Branch & Sol ID",
+        "label_hi": "बैंक शाखा एवं सोल आईडी",
+        "explanation_en": "Branch name and official Sol ID where your loan application is submitted.",
+        "explanation_hi": "बैंक शाखा का नाम और सोल आईडी जहां आपका आवेदन प्रस्तुत किया जा रहा है।",
+        "field_type": "text",
+        "is_required": true
+      },
+      {
+        "field_id": "f_gold_applicant_name",
+        "profile_mapping": "full_name",
+        "label_en": "Applicant Full Name (as on ID Proof)",
+        "label_hi": "आवेदक का पूरा नाम (पहचान प्रमाण के अनुसार)",
+        "explanation_en": "Enter your full legal name exactly as printed on your Aadhaar or PAN card.",
+        "explanation_hi": "अपना पूरा नाम ठीक वैसे ही लिखें जैसा आपके आधार या पैन कार्ड पर अंकित है।",
+        "field_type": "text",
+        "is_required": true
+      },
+      {
+        "field_id": "f_father_spouse",
+        "profile_mapping": "father_or_spouse_name",
+        "label_en": "Father / Spouse Name",
+        "label_hi": "पिता / पति का नाम",
+        "explanation_en": "Father or Spouse legal name for identity verification.",
+        "explanation_hi": "पहचान सत्यापन हेतु पिता या जीवनसाथी का नाम।",
+        "field_type": "text",
+        "is_required": true
+      },
+      {
+        "field_id": "f_dob",
+        "profile_mapping": "date_of_birth",
+        "label_en": "Date of Birth (DD/MM/YYYY)",
+        "label_hi": "जन्म तिथि (दिन/माह/वर्ष)",
+        "explanation_en": "Your date of birth as verified by your identity documents.",
+        "explanation_hi": "पहचान पत्र के अनुसार आपकी जन्म तिथि।",
+        "field_type": "text",
+        "is_required": true
+      },
+      {
+        "field_id": "f_gold_gender",
+        "profile_mapping": "gender",
+        "label_en": "Gender",
+        "label_hi": "लिंग",
+        "explanation_en": "Select Male, Female, or Other.",
+        "explanation_hi": "पुरुष, महिला या अन्य का चयन करें।",
+        "field_type": "select",
+        "is_required": true
+      },
+      {
+        "field_id": "f_pan_no",
+        "profile_mapping": "pan_number",
+        "label_en": "PAN Number (10 Digits)",
+        "label_hi": "पैन नंबर (10 अंक)",
+        "explanation_en": "10-digit Permanent Account Number. Mandatory for banking loans above ₹50,000.",
+        "explanation_hi": "10 अंकों का पैन नंबर। ₹50,000 से अधिक के बैंक ऋण के लिए अनिवार्य।",
+        "field_type": "text",
+        "is_required": true
+      },
+      {
+        "field_id": "f_gold_aadhaar",
+        "profile_mapping": "aadhaar_number",
+        "label_en": "UID Aadhaar Number",
+        "label_hi": "आधार कार्ड संख्या",
+        "explanation_en": "12-digit Aadhaar number for C-KYC authentication.",
+        "explanation_hi": "सी-केवाईसी प्रमाणीकरण हेतु 12 अंकों का आधार नंबर।",
+        "field_type": "text",
+        "is_required": true
+      },
+      {
+        "field_id": "f_comm_address",
+        "profile_mapping": "full_address",
+        "label_en": "Communication Address & Pincode",
+        "label_hi": "पत्राचार का पता एवं पिन कोड",
+        "explanation_en": "Current residential address where official bank communications will be delivered.",
+        "explanation_hi": "वर्तमान निवास का पता जहां बैंक पत्राचार भेजा जाएगा।",
+        "field_type": "text",
+        "is_required": true
+      },
+      {
+        "field_id": "f_occupation_type",
+        "profile_mapping": "occupation",
+        "label_en": "Occupation Type & Source of Fund",
+        "label_hi": "व्यवसाय का प्रकार एवं आय का स्रोत",
+        "explanation_en": "Salaried, Agriculture, Business, or Self-employed.",
+        "explanation_hi": "वेतनभोगी, कृषि, व्यवसाय या स्वरोजगार।",
+        "field_type": "text",
+        "is_required": true
+      },
+      {
+        "field_id": "f_loan_amount",
+        "profile_mapping": "loan_amount",
+        "label_en": "Requested Loan Amount & Tenure",
+        "label_hi": "वांछित ऋण राशि एवं अवधि",
+        "explanation_en": "Loan amount in INR and tenure in months requested against gold ornaments.",
+        "explanation_hi": "सोने के आभूषणों के एवज में मांगी गई ऋण राशि और महीनों में अवधि।",
+        "field_type": "text",
+        "is_required": true
+      }
+    ],
+    "checklist_en": [
+      "Provide original gold ornaments (18k to 22k purity) for valuation by bank-approved appraiser.",
+      "Attach self-attested copies of Aadhaar Card and PAN Card.",
+      "Submit recent passport-sized color photographs.",
+      "Sign the Loan Agreement and pledge declaration form."
+    ],
+    "checklist_hi": [
+      "बैंक द्वारा अधिकृत मूल्यांकक से जांच हेतु असली सोने के आभूषण (18k से 22k शुद्धता) प्रस्तुत करें।",
+      "आधार कार्ड और पैन कार्ड की स्व-प्रमाणित प्रतियां संलग्न करें।",
+      "हाल ही के पासपोर्ट आकार के रंगीन फोटो जमा करें।",
+      "ऋण अनुबंध एवं गिरवी घोषणा पत्र पर हस्ताक्षर करें।"
+    ]
   }
 ]

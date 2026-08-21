@@ -9,7 +9,7 @@ load_dotenv(BASE_DIR.parent / ".env")
 
 
 class Settings:
-    PROJECT_NAME: str = "Paperwork & Access"
+    PROJECT_NAME: str = "EasyPaper"
     VERSION: str = "1.0.0"
     ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")
     PORT: int = int(os.getenv("PORT", "8000"))
@@ -25,9 +25,6 @@ class Settings:
     GEMINI_LLM_MODEL: str = os.getenv("GEMINI_LLM_MODEL", "gemini-3.5-flash-lite")
     GEMINI_TTS_MODEL: str = os.getenv("GEMINI_TTS_MODEL", "gemini-2.5-flash-preview-tts")
     GEMINI_VOICE_NAME: str = os.getenv("GEMINI_VOICE_NAME", "Aoede")
-
-    # Firebase
-    FIREBASE_PROJECT_ID: str = os.getenv("FIREBASE_PROJECT_ID", "paperwork-access")
 
     # CORS
     CORS_ORIGINS: list[str] = [

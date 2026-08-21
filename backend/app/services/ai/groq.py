@@ -13,12 +13,45 @@ def clean_llm_response(text: str) -> str:
     """Strip reasoning <think>...</think> tags and markdown code blocks."""
     if not text:
         return ""
-    # Remove <think> ... </think> tags
     cleaned = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
-    # Remove markdown ```json or ``` code fences
-    cleaned = re.sub(r"^```[a-zA-Z]*\s*", "", cleaned, flags=re.MULTILINE)
-    cleaned = re.sub(r"```$", "", cleaned, flags=re.MULTILINE).strip()
+    cleaned = re.sub(r"```(?:json)?\s*", "", cleaned, flags=re.IGNORECASE)
+    cleaned = re.sub(r"```", "", cleaned).strip()
     return cleaned
+
+
+def parse_llm_json(raw_content: str) -> Optional[dict[str, Any]]:
+    """Robustly extract and parse JSON object from LLM response."""
+    if not raw_content:
+        return None
+    cleaned = clean_llm_response(raw_content)
+    start_idx = cleaned.find("{")
+    end_idx = cleaned.rfind("}")
+    if start_idx != -1 and end_idx != -1 and end_idx > start_idx:
+        json_slice = cleaned[start_idx : end_idx + 1]
+        try:
+            parsed = json.loads(json_slice)
+            # Filter out any placeholder echoes
+            if isinstance(parsed, dict) and "fields" in parsed:
+                parsed["fields"] = [
+                    f for f in parsed["fields"]
+                    if f.get("field_key") not in ("standard_snake_case_key", "string", "example_field_key")
+                    and f.get("label_en") not in ("Human-readable English label", "string")
+                ]
+            return parsed
+        except Exception:
+            pass
+    try:
+        parsed = json.loads(cleaned)
+        if isinstance(parsed, dict) and "fields" in parsed:
+            parsed["fields"] = [
+                f for f in parsed["fields"]
+                if f.get("field_key") not in ("standard_snake_case_key", "string", "example_field_key")
+                and f.get("label_en") not in ("Human-readable English label", "string")
+            ]
+        return parsed
+    except Exception as e:
+        logger.warning(f"Failed to parse JSON from LLM: {e}")
+        return None
 
 
 class GroqService:
@@ -51,35 +84,34 @@ class GroqService:
             logger.info("Groq API key not configured, using deterministic fallback.")
             return None
 
-        prompt = f"""You are an accurate, strict document parsing assistant.
-Given the following raw OCR text from an uploaded document, extract structured identity, address, and eligibility-related fields.
+        # Truncate to safe window to stay within token limits
+        safe_text = raw_ocr_text[:5000]
 
-Rules:
-1. Every extracted field MUST be grounded strictly in the OCR text. Do NOT guess or hallucinate any values.
-2. Provide the exact snippet of source text from the OCR where you found the value.
-3. If document type is not provided, detect whether it is an identity_card (Aadhaar/Voter/PAN), income_certificate, land_record, caste_certificate, or general_document.
-4. Return ONLY a valid JSON object matching this schema:
+        prompt = f"""Extract all identity, address, and application fields from the document text below.
+Instructions:
+1. Detect document type (e.g. loan_application_form, identity_card, income_certificate, land_record, bank_form).
+2. If it is a blank application form, extract the major required fields (e.g. Applicant Full Name, Date of Birth, Gender, Father/Spouse Name, Communication Address, State, Pincode, Mobile No, Email, Occupation, Branch, Loan Scheme). Set value to "[Blank Form Field - Required]".
+3. If it has filled user data, extract the exact values with their source text snippet.
+4. Output valid JSON only:
 {{
-  "detected_document_type": "string",
+  "detected_document_type": "{document_type_hint or 'general_document'}",
   "fields": [
     {{
-      "field_key": "standard_snake_case_key (e.g. full_name, date_of_birth, annual_income, aadhaar_number, etc.)",
-      "label_en": "Human-readable English label",
-      "label_hi": "Human-readable Hindi label (in Devanagari script)",
-      "value": "extracted string or number",
-      "source_text": "Exact text snippet from the raw OCR",
+      "field_key": "applicant_full_name",
+      "label_en": "Applicant Full Name",
+      "label_hi": "आवेदक का पूरा नाम",
+      "value": "Extracted value or [Blank Form Field - Required]",
+      "source_text": "Name",
       "confidence": 0.95,
-      "category": "identity | address | income | general",
-      "is_sensitive": true or false
+      "category": "identity",
+      "is_sensitive": false
     }}
   ]
 }}
 
-Document Type Hint: {document_type_hint or "None"}
-
-Raw OCR Text:
+Document OCR Text:
 \"\"\"
-{raw_ocr_text}
+{safe_text}
 \"\"\"
 """
         try:
@@ -95,12 +127,7 @@ Raw OCR Text:
                 temperature=0.1,
             )
             raw_content = response.choices[0].message.content or ""
-            cleaned = clean_llm_response(raw_content)
-            # Find the outermost JSON object
-            match = re.search(r"\{.*\}", cleaned, re.DOTALL)
-            if match:
-                return json.loads(match.group(0))
-            return json.loads(cleaned)
+            return parse_llm_json(raw_content)
         except Exception as e:
             logger.error(f"Groq document extraction failed: {e}")
             return None

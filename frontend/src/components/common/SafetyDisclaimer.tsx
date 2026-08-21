@@ -23,8 +23,8 @@ export const SafetyDisclaimer: React.FC<SafetyDisclaimerProps> = ({ sourceUrl, c
         </p>
         <p className="leading-relaxed">
           {language === 'en'
-            ? 'Paperwork & Access is an independent bilingual assistant. It does not provide legal advice, official eligibility decisions, or government submission confirmation. Please verify all details on the official portal.'
-            : 'पेपरवर्क एंड एक्सेस एक स्वतंत्र द्विभाषी मार्गदर्शक है। यह कानूनी सलाह, आधिकारिक पात्रता निर्णय या सरकारी आवेदन स्वीकृति प्रदान नहीं करता है। कृपया आधिकारिक पोर्टल पर विवरण सत्यापित करें।'}
+            ? 'EasyPaper is an independent bilingual assistant. It does not provide legal advice, official eligibility decisions, or government submission confirmation. Please verify all details on the official portal.'
+            : 'ईज़ी-पेपर एक स्वतंत्र द्विभाषी मार्गदर्शक है। यह कानूनी सलाह, आधिकारिक पात्रता निर्णय या सरकारी आवेदन स्वीकृति प्रदान नहीं करता है। कृपया आधिकारिक पोर्टल पर विवरण सत्यापित करें।'}
         </p>
         {sourceUrl && (
           <div className="pt-1">

@@ -6,6 +6,8 @@ from backend.app.schemas.assistant_schemas import (
     ExplainResponse,
     AssistantMessageRequest,
     AssistantMessageResponse,
+    VoiceGuideRequest,
+    VoiceGuideResponse,
 )
 from backend.modules.bilingual_explainer.explainer import bilingual_explainer_service
 from backend.app.services.ai.groq import groq_service
@@ -54,18 +56,41 @@ def assistant_chat(request: AssistantMessageRequest):
         raise HTTPException(status_code=500, detail=f"Assistant chat error: {e}")
 
 
+@router.post("/assistant/agent/guide", response_model=VoiceGuideResponse)
+def voice_agent_guide(request: VoiceGuideRequest):
+    """
+    Conversational Voice Agent endpoint with multi-turn stage tracking and missing field identification.
+    """
+    try:
+        return bilingual_explainer_service.voice_guide_turn(
+            user_message=request.user_message,
+            language=request.language,
+            current_screen=request.current_screen,
+            agent_stage=request.agent_stage,
+            active_form_id=request.active_form_id,
+            active_field_id=request.active_field_id,
+            profile_data=request.profile_data,
+            form_fields=request.form_fields,
+            conversation_history=request.conversation_history,
+            synthesize_audio=request.synthesize_audio,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Voice guide error: {e}")
+
+
 @router.post("/assistant/synthesize")
 def synthesize_speech(request: SynthesizeSpeechRequest):
     """
-    Synthesize short spoken audio using real Gemini TTS (gemini-2.5-flash-preview-tts).
+    Synthesize spoken audio using Gemini 2.5 Flash TTS with automatic gTTS fallback.
     """
     try:
-        audio_b64 = gemini_service.synthesize_speech(request.text, request.voice_name)
-        if not audio_b64:
-            raise HTTPException(status_code=500, detail="Failed to generate TTS audio from Gemini.")
+        res = gemini_service.synthesize_speech(request.text, request.voice_name)
+        if not res:
+            raise HTTPException(status_code=500, detail="Failed to generate TTS audio.")
+        audio_b64, audio_fmt = res
         return {
             "audio_base64": audio_b64,
-            "format": "pcm_24khz",
+            "format": audio_fmt,
             "voice": request.voice_name,
         }
     except Exception as e:
