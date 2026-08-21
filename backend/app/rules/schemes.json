@@ -1,0 +1,159 @@
+[
+  {
+    "id": "scheme_pm_kisan",
+    "version": "2026.1",
+    "name_en": "PM-Kisan Samman Nidhi (Farmer Income Support)",
+    "name_hi": "प्रधानमंत्री किसान सम्मान निधि (आय सहायता)",
+    "category_en": "Agriculture & Farmer Welfare",
+    "category_hi": "कृषि एवं किसान कल्याण",
+    "description_en": "Direct income support of ₹6,000 per year in three equal installments to small and marginal farmer families who own cultivable land.",
+    "description_hi": "कृषि योग्य भूमि वाले छोटे और सीमांत किसान परिवारों को ₹6,000 प्रति वर्ष की प्रत्यक्ष आय सहायता।",
+    "official_source_url": "https://pmkisan.gov.in/",
+    "criteria": [
+      {
+        "id": "crit_age",
+        "field_key": "age",
+        "label_en": "Applicant Age (18+ years)",
+        "label_hi": "आवेदक की आयु (18 वर्ष या अधिक)",
+        "rule_type": "min_value",
+        "threshold": 18,
+        "citation": "PM-Kisan Operational Guidelines Sec 2.1 — Applicant must be an adult family head/member."
+      },
+      {
+        "id": "crit_landholding",
+        "field_key": "landholding_acres",
+        "label_en": "Cultivable Landholding (Up to 5 Acres)",
+        "label_hi": "कृषि योग्य भूमि का स्वामित्व (5 एकड़ तक)",
+        "rule_type": "range",
+        "min_value": 0.01,
+        "max_value": 5.0,
+        "citation": "PM-Kisan Operational Guidelines Sec 3.2 — Must possess cultivable land entered in State Land Records (Khatauni/RoR)."
+      },
+      {
+        "id": "crit_state",
+        "field_key": "state",
+        "label_en": "Indian Resident / State Citizen",
+        "label_hi": "भारतीय निवासी / राज्य का नागरिक",
+        "rule_type": "not_empty",
+        "citation": "PM-Kisan Eligibility Criteria Sec 1.1 — Valid residential status in Indian State/UT."
+      }
+    ],
+    "required_documents": [
+      {
+        "doc_type": "identity_card",
+        "name_en": "Aadhaar Card",
+        "name_hi": "आधार कार्ड",
+        "reason_en": "Required for biometric identity verification and DBT linking.",
+        "reason_hi": "बायोमेट्रिक पहचान सत्यापन और डीबीटी लिंकिंग के लिए आवश्यक।"
+      },
+      {
+        "doc_type": "land_record",
+        "name_en": "Land Ownership Record (Khatauni / RoR)",
+        "name_hi": "भूमि स्वामित्व अभिलेख (खतौनी / अधिकार अभिलेख)",
+        "reason_en": "Required to verify agricultural plot ownership and acreage.",
+        "reason_hi": "कृषि भूमि के स्वामित्व और रकबे की पुष्टि के लिए आवश्यक।"
+      },
+      {
+        "doc_type": "bank_passbook",
+        "name_en": "Bank Account Details (DBT Enabled)",
+        "name_hi": "बैंक खाता विवरण (डीबीटी सक्षम)",
+        "reason_en": "Direct installment transfer to applicant's Aadhaar-seeded bank account.",
+        "reason_hi": "आधार से जुड़े बैंक खाते में सीधे किस्त हस्तांतरण के लिए।"
+      }
+    ]
+  },
+  {
+    "id": "scheme_pm_awas",
+    "version": "2026.1",
+    "name_en": "PM Awas Yojana (Gramin Housing Assistance)",
+    "name_hi": "प्रधानमंत्री आवास योजना (ग्रामीण आवास सहायता)",
+    "category_en": "Rural Development & Housing",
+    "category_hi": "ग्रामीण विकास एवं आवास",
+    "description_en": "Financial assistance of ₹1,20,000 for constructing a pucca house with basic amenities for rural families living in kutcha or dilapidated houses.",
+    "description_hi": "कच्चे या जीर्ण-शीर्ण मकानों में रहने वाले ग्रामीण परिवारों को पक्का मकान बनाने के लिए ₹1,20,000 की वित्तीय सहायता।",
+    "official_source_url": "https://pmayg.nic.in/",
+    "criteria": [
+      {
+        "id": "crit_age",
+        "field_key": "age",
+        "label_en": "Applicant Age (18+ years)",
+        "label_hi": "आवेदक की आयु (18 वर्ष या अधिक)",
+        "rule_type": "min_value",
+        "threshold": 18,
+        "citation": "PMAY-G Framework Sec 4.1 — Applicant must be an adult citizen."
+      },
+      {
+        "id": "crit_income",
+        "field_key": "annual_income",
+        "label_en": "Annual Household Income (Maximum ₹1,20,000)",
+        "label_hi": "वार्षिक पारिवारिक आय (अधिकतम ₹1,20,000)",
+        "rule_type": "max_value",
+        "threshold": 120000,
+        "citation": "PMAY-G Income Ceilings Guidelines Clause 3.4 — Prioritizes households with annual income under ₹1.2 Lakhs."
+      }
+    ],
+    "required_documents": [
+      {
+        "doc_type": "identity_card",
+        "name_en": "Aadhaar Card",
+        "name_hi": "आधार कार्ड",
+        "reason_en": "Proof of identity and residential eligibility.",
+        "reason_hi": "पहचान और निवास पात्रता का प्रमाण।"
+      },
+      {
+        "doc_type": "income_certificate",
+        "name_en": "Income Certificate from Revenue Authority",
+        "name_hi": "राजस्व अधिकारी द्वारा जारी आय प्रमाण पत्र",
+        "reason_en": "Required to prove household income meets the scheme limit.",
+        "reason_hi": "यह प्रमाणित करने के लिए कि पारिवारिक आय योजना सीमा के भीतर है।"
+      }
+    ]
+  },
+  {
+    "id": "scheme_old_age_pension",
+    "version": "2026.1",
+    "name_en": "Indira Gandhi National Old Age Pension Scheme",
+    "name_hi": "इंदिरा गांधी राष्ट्रीय वृद्धावस्था पेंशन योजना",
+    "category_en": "Social Welfare & Pensions",
+    "category_hi": "समाज कल्याण एवं पेंशन",
+    "description_en": "Monthly financial pension assistance for senior citizens aged 60 years or above belonging to below poverty line families.",
+    "description_hi": "गरीबी रेखा से नीचे के 60 वर्ष या उससे अधिक आयु के वरिष्ठ नागरिकों के लिए मासिक पेंशन सहायता।",
+    "official_source_url": "https://nsap.nic.in/",
+    "criteria": [
+      {
+        "id": "crit_senior_age",
+        "field_key": "age",
+        "label_en": "Senior Citizen Age (60+ years)",
+        "label_hi": "वरिष्ठ नागरिक आयु (60 वर्ष या अधिक)",
+        "rule_type": "min_value",
+        "threshold": 60,
+        "citation": "NSAP Guidelines Sec 2.1(a) — Applicant must have attained 60 years of age."
+      },
+      {
+        "id": "crit_bpl_income",
+        "field_key": "annual_income",
+        "label_en": "Annual Income Limit (Maximum ₹60,000)",
+        "label_hi": "वार्षिक आय सीमा (अधिकतम ₹60,000)",
+        "rule_type": "max_value",
+        "threshold": 60000,
+        "citation": "NSAP Income Eligibility Criteria Sec 3 — BPL verification by local Panchayat/Tehsil."
+      }
+    ],
+    "required_documents": [
+      {
+        "doc_type": "identity_card",
+        "name_en": "Aadhaar Card or Age Proof",
+        "name_hi": "आधार कार्ड या आयु प्रमाण",
+        "reason_en": "Required to verify 60+ age qualification.",
+        "reason_hi": "60 वर्ष से अधिक आयु की पुष्टि के लिए आवश्यक।"
+      },
+      {
+        "doc_type": "income_certificate",
+        "name_en": "Income / BPL Certificate",
+        "name_hi": "आय / बीपीएल प्रमाण पत्र",
+        "reason_en": "Verifies low-income eligibility status.",
+        "reason_hi": "कम आय पात्रता स्थिति की पुष्टि करता है।"
+      }
+    ]
+  }
+]

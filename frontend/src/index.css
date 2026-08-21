@@ -1,0 +1,59 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-paper-canvas: #FAF7F0;
+    --color-clear-surface: #FFFFFF;
+    --color-ink: #20231F;
+    --color-quiet-olive: #5E6853;
+    --color-divider-sand: #E7E1D6;
+    --color-guidance-green: #2F6B56;
+    --color-review-amber: #A76119;
+    --color-error-brick: #A7443D;
+  }
+
+  body {
+    background-color: var(--color-paper-canvas);
+    color: var(--color-ink);
+    font-family: 'Geist', 'Arial', sans-serif;
+    font-size: 16px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Hindi / Devanagari specific font handling */
+  [lang="hi"], .lang-hi {
+    font-family: 'Noto Sans Devanagari', 'Nirmala UI', sans-serif;
+    line-height: 1.65;
+  }
+
+  /* Accessible focus ring */
+  *:focus-visible {
+    outline: 2px solid var(--color-guidance-green);
+    outline-offset: 2px;
+  }
+
+  /* Restrained button press */
+  button:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #FAF7F0;
+}
+::-webkit-scrollbar-thumb {
+  background: #D8D0C3;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #5E6853;
+}

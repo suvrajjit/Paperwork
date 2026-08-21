@@ -1,0 +1,198 @@
+[
+  {
+    "id": "form_pm_kisan_app",
+    "name_en": "PM-Kisan Farmer Enrollment Application Form",
+    "name_hi": "प्रधानमंत्री किसान सम्मान निधि नामांकन आवेदन पत्र",
+    "category": "Agriculture",
+    "form_type": "manual",
+    "supported_fillable": true,
+    "description_en": "Standard physical/scanned application form for registering under the PM-Kisan scheme.",
+    "description_hi": "पीएम-किसान योजना के तहत पंजीकरण के लिए मानक आवेदन पत्र।",
+    "fields": [
+      {
+        "field_id": "f_applicant_name",
+        "profile_mapping": "full_name",
+        "label_en": "Farmer / Applicant's Full Name",
+        "label_hi": "कृषक / आवेदक का पूरा नाम",
+        "explanation_en": "Enter your name exactly as it appears on your Aadhaar card and land record.",
+        "explanation_hi": "अपना नाम ठीक वैसे ही लिखें जैसा आपके आधार कार्ड और खतौनी में दर्ज है।",
+        "field_type": "text",
+        "is_required": true
+      },
+      {
+        "field_id": "f_father_name",
+        "profile_mapping": "father_or_spouse_name",
+        "label_en": "Father / Husband's Name",
+        "label_hi": "पिता / पति का नाम",
+        "explanation_en": "Name of your father or spouse as recorded in official identity documents.",
+        "explanation_hi": "आधिकारिक पहचान पत्र में दर्ज पिता या पति का नाम।",
+        "field_type": "text",
+        "is_required": true
+      },
+      {
+        "field_id": "f_gender",
+        "profile_mapping": "gender",
+        "label_en": "Gender",
+        "label_hi": "लिंग",
+        "explanation_en": "Select Male, Female, or Other as stated in your identity proof.",
+        "explanation_hi": "पहचान पत्र के अनुसार पुरुष, महिला या अन्य का चयन करें।",
+        "field_type": "select",
+        "is_required": true
+      },
+      {
+        "field_id": "f_aadhaar_no",
+        "profile_mapping": "aadhaar_number",
+        "label_en": "Aadhaar Card Number (12 Digits)",
+        "label_hi": "आधार कार्ड संख्या (12 अंक)",
+        "explanation_en": "Your 12-digit unique identification number. Will be masked for privacy in previews.",
+        "explanation_hi": "आपकी 12 अंकों की विशिष्ट पहचान संख्या। पूर्वावलोकन में इसे सुरक्षित रूप से छुपाया जाएगा।",
+        "field_type": "text",
+        "is_required": true
+      },
+      {
+        "field_id": "f_state",
+        "profile_mapping": "state",
+        "label_en": "State of Residence",
+        "label_hi": "निवास का राज्य",
+        "explanation_en": "The Indian State or Union Territory where your agricultural land is located.",
+        "explanation_hi": "वह राज्य जहां आपकी कृषि भूमि स्थित है।",
+        "field_type": "text",
+        "is_required": true
+      },
+      {
+        "field_id": "f_district",
+        "profile_mapping": "district",
+        "label_en": "District",
+        "label_hi": "जिला",
+        "explanation_en": "Administrative district of your residence and farm.",
+        "explanation_hi": "आपके निवास और कृषि क्षेत्र का प्रशासनिक जिला।",
+        "field_type": "text",
+        "is_required": true
+      },
+      {
+        "field_id": "f_pincode",
+        "profile_mapping": "pincode",
+        "label_en": "Postal Pincode",
+        "label_hi": "पोस्टल पिन कोड",
+        "explanation_en": "6-digit postal code of your village or town.",
+        "explanation_hi": "आपके गांव या कस्बे का 6 अंकों का पिन कोड।",
+        "field_type": "text",
+        "is_required": true
+      },
+      {
+        "field_id": "f_land_area",
+        "profile_mapping": "landholding_acres",
+        "label_en": "Cultivable Landholding Area (in Acres)",
+        "label_hi": "कृषि भूमि का क्षेत्रफल (एकड़ में)",
+        "explanation_en": "Total agricultural landholding owned by the farmer as per the Khatauni / RoR document.",
+        "explanation_hi": "खतौनी / अधिकार अभिलेख के अनुसार किसान के स्वामित्व वाली कुल कृषि भूमि का क्षेत्रफल।",
+        "field_type": "number",
+        "is_required": true
+      },
+      {
+        "field_id": "f_bank_account",
+        "profile_mapping": "bank_account_number",
+        "label_en": "Aadhaar-Seeded Bank Account Number",
+        "label_hi": "आधार से जुड़ा बैंक खाता नंबर",
+        "explanation_en": "Active bank account number for receiving direct benefit transfer installments.",
+        "explanation_hi": "डीबीटी किस्तें प्राप्त करने के लिए सक्रिय बैंक खाता संख्या।",
+        "field_type": "text",
+        "is_required": true
+      },
+      {
+        "field_id": "f_bank_ifsc",
+        "profile_mapping": "bank_ifsc_code",
+        "label_en": "Bank Branch IFSC Code",
+        "label_hi": "बैंक शाखा का आईएफएससी कोड",
+        "explanation_en": "11-character alphanumeric code printed on your bank passbook/cheque.",
+        "explanation_hi": "आपकी बैंक पासबुक या चेक पर अंकित 11 अक्षरों का विशिष्ट कोड।",
+        "field_type": "text",
+        "is_required": true
+      }
+    ],
+    "checklist_en": [
+      "Ensure the applicant's name matches identically across Aadhaar and Land Records.",
+      "Verify that the bank account is active and seeded with Aadhaar for NPCI Direct Benefit Transfer (DBT).",
+      "Attach self-attested photocopy of Aadhaar Card and updated Khatauni.",
+      "Submit the signed physical form to the local Agriculture Department Officer or CSC VLE."
+    ],
+    "checklist_hi": [
+      "सुनिश्चित करें कि आवेदक का नाम आधार और भू-अभिलेखों (खतौनी) में बिल्कुल एक समान हो।",
+      "पुष्टि करें कि बैंक खाता सक्रिय है और प्रत्यक्ष लाभ अंतरण (DBT) के लिए आधार से लिंक है।",
+      "आधार कार्ड और अद्यतन खतौनी की स्व-प्रमाणित छायाप्रति संलग्न करें।",
+      "हस्ताक्षरित फॉर्म स्थानीय कृषि विभाग कार्यालय या सीएससी केंद्र में जमा करें।"
+    ]
+  },
+  {
+    "id": "form_income_cert_app",
+    "name_en": "Revenue Income Certificate Application Form",
+    "name_hi": "राजस्व आय प्रमाण पत्र आवेदन प्रपत्र",
+    "category": "Revenue",
+    "form_type": "fillable_pdf",
+    "supported_fillable": true,
+    "description_en": "Official application form for obtaining a verified Income Certificate from the Tehsil Revenue Officer.",
+    "description_hi": "तहसील राजस्व अधिकारी से आय प्रमाण पत्र प्राप्त करने के लिए आधिकारिक आवेदन प्रपत्र।",
+    "fields": [
+      {
+        "field_id": "f_applicant_full_name",
+        "profile_mapping": "full_name",
+        "label_en": "Applicant Full Name",
+        "label_hi": "आवेदक का पूरा नाम",
+        "explanation_en": "Your official legal name as shown on your identity document.",
+        "explanation_hi": "पहचान पत्र पर दर्ज आपका आधिकारिक कानूनी नाम।",
+        "field_type": "text",
+        "is_required": true
+      },
+      {
+        "field_id": "f_parent_spouse",
+        "profile_mapping": "father_or_spouse_name",
+        "label_en": "Father / Husband's Name",
+        "label_hi": "पिता / पति का नाम",
+        "explanation_en": "Guardian or spouse name for familial identification.",
+        "explanation_hi": "पारिवारिक पहचान के लिए अभिभावक या पति का नाम।",
+        "field_type": "text",
+        "is_required": true
+      },
+      {
+        "field_id": "f_permanent_address",
+        "profile_mapping": "full_address",
+        "label_en": "Permanent Residential Address",
+        "label_hi": "स्थायी निवास का पता",
+        "explanation_en": "Complete village, street, post office, and district address.",
+        "explanation_hi": "गांव, मोहल्ला, डाकघर और जिले सहित पूरा पता।",
+        "field_type": "text",
+        "is_required": true
+      },
+      {
+        "field_id": "f_district_name",
+        "profile_mapping": "district",
+        "label_en": "District / Tehsil",
+        "label_hi": "जिला / तहसील",
+        "explanation_en": "Jurisdiction where the property or family resides.",
+        "explanation_hi": "वह अधिकार क्षेत्र जहां परिवार निवास करता है।",
+        "field_type": "text",
+        "is_required": true
+      },
+      {
+        "field_id": "f_declared_income",
+        "profile_mapping": "annual_income",
+        "label_en": "Total Declared Annual Family Income (INR)",
+        "label_hi": "कुल घोषित वार्षिक पारिवारिक आय (रुपये)",
+        "explanation_en": "Total combined annual income from all sources (agriculture, labor, business, etc.).",
+        "explanation_hi": "सभी स्रोतों (कृषि, मजदूरी, व्यापार आदि) से कुल वार्षिक पारिवारिक आय।",
+        "field_type": "number",
+        "is_required": true
+      }
+    ],
+    "checklist_en": [
+      "Attach identity proof (Aadhaar or Voter ID).",
+      "Attach electricity bill, ration card, or domicile certificate as address proof.",
+      "Submit self-declaration affidavit regarding annual family income."
+    ],
+    "checklist_hi": [
+      "पहचान प्रमाण (आधार कार्ड अथवा मतदाता पहचान पत्र) संलग्न करें।",
+      "निवास प्रमाण के रूप में बिजली बिल, राशन कार्ड अथवा निवास प्रमाण पत्र संलग्न करें।",
+      "वार्षिक पारिवारिक आय के संबंध में स्व-घोषणा शपथ पत्र प्रस्तुत करें।"
+    ]
+  }
+]
